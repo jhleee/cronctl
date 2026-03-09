@@ -403,19 +403,19 @@ Implements MCP stdio transport using the `mcp` Python SDK.
 | Tool | Core function | Description |
 |------|--------------|-------------|
 | `cronctl_list_jobs` | `job_manager.list()` | List jobs with optional filters |
-| `cronctl_create_job` | `job_manager.create()` | Create a job from parameters |
+| `cronctl_create_job` | `job_manager.save()` | Create a job from parameters |
 | `cronctl_delete_job` | `job_manager.delete()` | Remove a job |
 | `cronctl_update_job` | `job_manager.update()` | Modify job properties |
 | `cronctl_run_job` | `executor.execute()` | Run immediately, return result |
 | `cronctl_get_logs` | `db.get_runs()` | Query execution history |
-| `cronctl_system_status` | `db.status_summary()` | Aggregate overview |
+| `cronctl_system_status` | `db.recent_summary()` + `job_manager.list()` | Aggregate overview |
 
 **Resources exposed:**
 
 | Resource | URI | Description |
 |----------|-----|-------------|
 | Job list | `cronctl://jobs` | All job definitions |
-| Job detail | `cronctl://jobs/{id}` | Single job YAML content |
+| Job detail | `cronctl://jobs/{job_id}` | Single job YAML content |
 | Config | `cronctl://config` | Global configuration |
 
 **Error handling:**
@@ -501,5 +501,4 @@ A future version may add a `singleton: true` option that wraps commands with flo
 - Read-only web status viewer (single HTML file, no server)
 - Additional notification channels — Telegram, email, PagerDuty
 - XDG base directory compliance
-- `cronctl doctor` — diagnose common issues (cron not running, PATH problems)
 - Import from existing crontab — parse raw crontab into job YAMLs

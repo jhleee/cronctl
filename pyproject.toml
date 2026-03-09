@@ -42,10 +42,10 @@ dev = [
 cronctl = "cronctl.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/yourname/cronctl"
-Repository = "https://github.com/yourname/cronctl"
-Issues = "https://github.com/yourname/cronctl/issues"
-Documentation = "https://github.com/yourname/cronctl/tree/main/docs"
+Homepage = "https://github.com/jhleee/cronctl"
+Repository = "https://github.com/jhleee/cronctl"
+Issues = "https://github.com/jhleee/cronctl/issues"
+Documentation = "https://github.com/jhleee/cronctl/tree/main/docs"
 
 [build-system]
 requires = ["hatchling"]

@@ -1,32 +1,35 @@
 # cronctl
 
-AI-agent-friendly local cron job manager built around system `cron`.
+AI-agent-friendly local cron job manager built on top of system `cron`.
 
-`cronctl` keeps job definitions in YAML, records executions in SQLite, and exposes one core through three interfaces:
+`cronctl` stores jobs as YAML, records runs in SQLite, and exposes the same core through a CLI, an MCP server, and a skill manifest. The repository now includes execution-tested examples, command-by-command I/O samples, and a wiki-style guide under [`docs/`](./docs).
 
-- CLI with `--json`
-- MCP server over stdio
-- SKILL manifest for agent context injection
+## What is implemented
 
-## Features
-
-- YAML-based jobs under `~/.cronctl/jobs/`
+- YAML job definitions under `~/.cronctl/jobs/`
 - SQLite run log under `~/.cronctl/logs/cronctl.db`
-- Retry and timeout handling through `cronctl exec`
+- Retry, timeout, and failure hook handling through `cronctl exec`
 - Managed crontab fence that preserves non-cronctl entries
-- Optional Discord, Slack, and webhook notifications
-- Interactive `cronctl init`
-- Import/export and inline job editing
+- `init`, `add`, `edit`, `list`, `enable`, `disable`, `sync`, `exec`, `logs`, `status`
+- `notify setup`, `notify test`, `export`, `import`, `gc`, `doctor`
+- MCP server over stdio and skill template copying via `cronctl init --skill-path`
 
 ## Quick Start
 
 ```bash
-uv tool install cronctl
-cronctl init
-cronctl add --id backup-db --schedule "0 3 * * *" --command "$HOME/.cronctl/scripts/backup-db.sh"
-cronctl exec backup-db
-cronctl logs backup-db --last 5
-cronctl status
+git clone https://github.com/jhleee/cronctl.git
+cd cronctl
+uv sync
+uv run python -m cronctl init --non-interactive
+uv run python -m cronctl add --id hello --schedule "* * * * *" --command "printf hello"
+uv run python -m cronctl exec hello
+uv run python -m cronctl logs hello --last 1
 ```
 
-Project documentation lives in [`docs/`](./docs).
+## Documentation
+
+- Overview and current feature map: [`docs/README.md`](./docs/README.md)
+- Wiki index: [`docs/wiki/README.md`](./docs/wiki/README.md)
+- Step-by-step walkthrough: [`docs/wiki/QUICKSTART.md`](./docs/wiki/QUICKSTART.md)
+- Command I/O examples: [`docs/wiki/CLI-IO.md`](./docs/wiki/CLI-IO.md)
+- MCP integration details: [`docs/MCP.md`](./docs/MCP.md)

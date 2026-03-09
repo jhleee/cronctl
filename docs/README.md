@@ -4,6 +4,10 @@ A lightweight, AI-agent-compatible cron job manager for local environments.
 
 **cronctl** wraps system crontab with structured job definitions, execution logging, and machine-friendly interfaces — CLI, MCP Server, and Skill manifest — so both humans and AI agents can manage scheduled tasks through a single tool.
 
+## Current Status
+
+The repository currently implements the core CLI, execution engine, notifications, MCP server, skill template, import/export flow, and a basic test suite. The examples in `docs/wiki/` were captured from real command executions against the current codebase.
+
 ## Why cronctl?
 
 Existing cron managers fall into two camps: heavyweight orchestrators (Airflow, Prefect) that are overkill for local tasks, and MCP-based schedulers that run their own daemon and die when the process stops. cronctl takes a different approach:
@@ -24,28 +28,39 @@ Existing cron managers fall into two camps: heavyweight orchestrators (Airflow, 
 - **Skill manifest** — SKILL.md for AI agent context injection
 - **Lightweight deps** — click + PyYAML + SQLite, notifications are optional
 
+## Documentation Map
+
+- [`../README.md`](../README.md) — repository overview and current quick start
+- [`wiki/README.md`](wiki/README.md) — wiki index
+- [`wiki/QUICKSTART.md`](wiki/QUICKSTART.md) — step-by-step walkthrough
+- [`wiki/CLI-IO.md`](wiki/CLI-IO.md) — command-by-command I/O examples from real runs
+- [`MCP.md`](MCP.md) — MCP tools, resources, and setup notes
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — implementation structure and core flow
+- [`ROADMAP.md`](ROADMAP.md) — completed work and remaining gaps
+
 ## Quick Start
 
 ```bash
-# Install
-uv tool install cronctl
+# From source
+git clone https://github.com/jhleee/cronctl.git
+cd cronctl
+uv sync
 
-# Interactive setup — creates ~/.cronctl/, detects cron, configures notifications
-cronctl init
+# Non-interactive setup
+uv run python -m cronctl init --non-interactive
 
 # Create and register a job
-cronctl add --id backup-db \
-            --schedule "0 3 * * *" \
-            --command "$HOME/.cronctl/scripts/backup-db.sh"
+uv run python -m cronctl add \
+    --id backup-db \
+    --schedule "0 3 * * *" \
+    --command "$HOME/.cronctl/scripts/backup-db.sh"
 
-# Test it
-cronctl exec backup-db
+# Run it immediately
+uv run python -m cronctl exec backup-db
 
-# Check logs
-cronctl logs backup-db --last=5
-
-# See overall status
-cronctl status
+# Check logs and overall status
+uv run python -m cronctl logs backup-db --last 5
+uv run python -m cronctl status
 ```
 
 ## Installation
@@ -53,48 +68,42 @@ cronctl status
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-# As a CLI tool (recommended)
-uv tool install cronctl
-
-# With notification support (Discord, Slack)
-uv tool install "cronctl[notify]"
-
-# With everything (MCP + notifications)
-uv tool install "cronctl[all]"
-
-# As a project dependency
-uv add cronctl
-
 # From source
-git clone https://github.com/yourname/cronctl.git
+git clone https://github.com/jhleee/cronctl.git
 cd cronctl
 uv sync
+
+# Run without installing globally
+uv run python -m cronctl --help
+
+# Or install the checkout as a local tool
+uv tool install .
 ```
 
 ## CLI Reference
 
-All commands support `--json` for machine-readable output. Built with [click](https://click.palletsprojects.com/).
+All output-producing commands support the global `--json` flag for machine-readable output. Built with [click](https://click.palletsprojects.com/).
 
 | Command | Description |
 |---------|-------------|
-| `cronctl init` | Interactive setup: directory, cron detection, notifications |
+| `cronctl init [--non-interactive]` | Create the home layout, write config, optionally register MCP and copy skill |
 | `cronctl add` | Create a job from flags or a YAML file |
 | `cronctl remove <job_id>` | Delete a job and its crontab entry |
-| `cronctl edit <job_id> --set key=value` | Update job properties |
-| `cronctl list [--tag=TAG]` | List registered jobs |
+| `cronctl edit <job_id> --set key=value` | Update supported job fields inline (`description`, `schedule`, `command`, `timeout`, `enabled`, `notify`, `retry.*`, `tags`, `env.*`) |
+| `cronctl list [--tag=TAG] [--status=all|enabled|disabled]` | List registered jobs |
 | `cronctl enable <job_id>` | Enable a disabled job |
 | `cronctl disable <job_id>` | Disable a job without removing it |
 | `cronctl sync` | Regenerate crontab from all job definitions |
-| `cronctl exec <job_id>` | Run a job immediately (same path as cron) |
-| `cronctl logs <job_id> [--last=N]` | Show execution history |
+| `cronctl exec <job_id>` | Run a job immediately through the same execution path cron uses |
+| `cronctl logs <job_id> [--last=N] [--status-filter=...]` | Show execution history |
 | `cronctl status` | Overview: job count, recent failures, next runs |
 | `cronctl mcp` | Start MCP server (stdio transport) |
 | `cronctl notify test` | Send a test notification to configured channels |
-| `cronctl notify setup` | Interactive notification channel configuration |
-| `cronctl export` | Export all jobs as a single YAML |
-| `cronctl import <file>` | Import jobs from exported YAML |
+| `cronctl notify setup [--replace]` | Configure notification channels interactively or via flags |
+| `cronctl export [--output=FILE]` | Export all jobs as YAML |
+| `cronctl import <file> [--replace]` | Import jobs from exported YAML |
 | `cronctl gc [--days=30]` | Garbage collect old log entries |
-| `cronctl doctor` | Diagnose common issues (cron running, PATH, permissions) |
+| `cronctl doctor` | Report basic environment diagnostics: home, config/db presence, cron/crontab, optional deps |
 
 ## AI Agent Integration
 
@@ -227,54 +236,52 @@ cronctl manages a fenced region in your crontab. Existing entries are never touc
 cronctl/
 ├── pyproject.toml
 ├── README.md
-├── LICENSE
 ├── src/
 │   └── cronctl/
 │       ├── __init__.py
 │       ├── __main__.py        # Entry point
 │       ├── cli/
-│       │   ├── __init__.py    # Click group + plugin loading
+│       │   ├── __init__.py
 │       │   ├── main.py        # Top-level group, global options
 │       │   ├── jobs.py        # add, remove, edit, list, enable, disable
 │       │   ├── run.py         # exec, logs, status
 │       │   ├── system.py      # init, sync, export, import, gc, doctor
-│       │   └── notify.py      # notify setup, notify test
+│       │   ├── notify.py      # notify setup, notify test
+│       │   └── support.py     # shared CLI helpers
 │       ├── core/
 │       │   ├── __init__.py
+│       │   ├── config.py      # home/config management
+│       │   ├── cron.py        # cron expression parsing / next-run calculation
 │       │   ├── models.py      # Job, RunResult, RetryPolicy, NotifyChannel
 │       │   ├── job_manager.py # YAML CRUD, crontab sync
 │       │   ├── executor.py    # Run, retry, timeout
 │       │   ├── db.py          # SQLite operations
-│       │   └── notifier.py    # Notification dispatcher
+│       │   ├── notifier.py    # Notification dispatcher
+│       │   ├── runtime.py     # service wiring
+│       │   └── utils.py       # shared helpers
 │       ├── mcp/
 │       │   ├── __init__.py
 │       │   └── server.py      # MCP stdio server
 │       └── skill/
+│           ├── __init__.py
 │           └── SKILL.md       # Skill manifest template
 ├── tests/
-│   ├── test_models.py
-│   ├── test_job_manager.py
-│   ├── test_executor.py
-│   ├── test_db.py
+│   ├── conftest.py
 │   ├── test_cli.py
-│   ├── test_notifier.py
-│   └── test_mcp.py
+│   └── test_core.py
 └── docs/
     ├── ARCHITECTURE.md
     ├── MCP.md
-    └── SKILL.md
+    ├── SKILL.md
+    └── wiki/
 ```
 
 ## Development
 
 ```bash
-git clone https://github.com/yourname/cronctl.git
+git clone https://github.com/jhleee/cronctl.git
 cd cronctl
 uv sync --dev
 uv run pytest
-uv run cronctl --help
+uv run python -m cronctl --help
 ```
-
-## License
-
-MIT

@@ -1,62 +1,61 @@
 # Roadmap
 
+## Current Snapshot
+
+The repository now has a working core package, CLI, MCP server, skill template, and execution-tested documentation. The checklist below reflects the current implementation status on `main`.
+
 ## v0.1.0 — MVP
 
 The minimum viable release: define → schedule → execute → log → query → notify.
 
-- [ ] `core/models.py` — Job, RunResult, RetryPolicy, NotifyChannel dataclasses
-- [ ] `core/db.py` — SQLite schema, insert/query/gc operations
-- [ ] `core/job_manager.py` — YAML load/save/delete, validation, crontab sync
-- [ ] `core/executor.py` — subprocess execution, timeout, retry, log capture
-- [ ] `core/notifier.py` — Discord, Slack, generic webhook notification dispatch
-- [ ] `cli/` — click-based CLI
-  - [ ] `main.py` — top-level group, global `--json` and `--home` options
-  - [ ] `system.py` — interactive `init` with cron detection + notification setup, sync, gc, doctor
-  - [ ] `jobs.py` — add, remove, edit, list, enable, disable
-  - [ ] `run.py` — exec, logs, status
-  - [ ] `notify.py` — `notify setup` (interactive), `notify test`
-- [ ] `__main__.py` — entry point
-- [ ] Non-interactive mode (`--non-interactive`) for all interactive commands
-- [ ] Test suite for core modules + CLI (using click.testing.CliRunner)
-- [ ] README, ARCHITECTURE, CONTRIBUTING docs
-- [ ] pyproject.toml with uv tool install support
-
-**Goal:** `uv tool install cronctl && cronctl init` — fully working in under a minute.
+- [x] `core/models.py` — Job, RunResult, RetryPolicy, NotifyChannel dataclasses
+- [x] `core/db.py` — SQLite schema, insert/query/gc operations
+- [x] `core/job_manager.py` — YAML load/save/delete, validation, crontab sync
+- [x] `core/executor.py` — subprocess execution, timeout, retry, log capture
+- [x] `core/notifier.py` — Discord, Slack, generic webhook notification dispatch
+- [x] `cli/` — click-based CLI
+  - [x] `main.py` — top-level group, global `--json` and `--home` options
+  - [x] `system.py` — interactive `init` with cron detection, sync, export/import, gc, doctor
+  - [x] `jobs.py` — add, remove, edit, list, enable, disable
+  - [x] `run.py` — exec, logs, status
+  - [x] `notify.py` — `notify setup`, `notify test`
+- [x] `__main__.py` — entry point
+- [x] Non-interactive mode for implemented interactive commands
+- [x] Test suite for core modules + CLI (using `click.testing.CliRunner`)
+- [x] README, architecture, MCP, contributing, and wiki-style docs
+- [x] `pyproject.toml` with local `uv` workflow support
 
 ## v0.2.0 — MCP Server
 
-- [ ] `mcp/server.py` — stdio transport, 7 tools
-- [ ] MCP resource endpoints (jobs, config)
-- [ ] Optional dependency handling (graceful error if `mcp` not installed)
-- [ ] `cronctl init` step to register MCP server in Claude Code / Cursor settings
+- [x] `mcp/server.py` — stdio transport, 7 tools
+- [x] MCP resource endpoints (`cronctl://jobs`, `cronctl://jobs/{job_id}`, `cronctl://config`)
+- [x] Optional dependency handling for `mcp`
+- [x] `cronctl init` option to register MCP server in Claude Code settings
 - [ ] MCP integration tests
-- [ ] MCP.md documentation
-
-**Goal:** Claude Code / Cursor can discover and use cronctl as MCP tools.
+- [x] MCP documentation
 
 ## v0.3.0 — Skill & Agent Polish
 
-- [ ] `skill/SKILL.md` — skill manifest template
-- [ ] `cronctl init --skill-path` — copy skill to agent project
-- [ ] `cronctl export` / `cronctl import` — bulk job management
-- [ ] `cronctl edit --set key=value` — inline property updates
+- [x] `skill/SKILL.md` — skill manifest template
+- [x] `cronctl init --skill-path` — copy skill to an agent project
+- [x] `cronctl export` / `cronctl import` — bulk job management
+- [x] `cronctl edit --set key=value` — inline property updates
 - [ ] Shell completion generation (bash, zsh, fish) via click
 - [ ] `cronctl watch <job_id>` — tail logs in real time
 
-**Goal:** Full AI agent workflow — agent discovers skill, uses MCP or CLI, manages jobs autonomously.
+## Next Up
 
-## v0.4.0 — Robustness
-
-- [ ] `singleton: true` job option (auto-flock)
-- [ ] Import from raw crontab — parse existing crontab entries into job YAMLs
+- [ ] MCP integration tests and CI coverage expansion
+- [ ] More complete `doctor` diagnostics for PATH and permission mismatches
+- [ ] Atomic rollback behavior when job save succeeds but crontab sync fails
 - [ ] Additional notification channels — Telegram, email, PagerDuty
-- [ ] Notification rate limiting (max N alerts per hour per job)
-- [ ] Log rotation / size limits beyond line truncation
+- [ ] Import from raw crontab entries
+- [ ] `singleton: true` job option (auto-flock)
 
-## Future (no timeline)
+## Future
 
 - Job dependency chains (`depends_on: [job-a]`)
 - Read-only web status viewer (single HTML file, no server)
 - XDG base directory compliance
 - Plugin system for custom executors (Docker, SSH, etc.)
-- `cronctl replay <run_id>` — re-run with same env/args as a past run
+- `cronctl replay <run_id>` — re-run with the same env/args as a past run

@@ -3,7 +3,7 @@
 ## Development Setup
 
 ```bash
-git clone https://github.com/yourname/cronctl.git
+git clone https://github.com/jhleee/cronctl.git
 cd cronctl
 uv sync --dev
 ```

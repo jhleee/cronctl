@@ -12,6 +12,8 @@ This means:
 - Same permissions as the calling user
 - Process dies when the client disconnects (no orphan daemons)
 
+`cronctl mcp` is intentionally a long-running stdio service. It does not print a human-friendly banner; the caller is expected to speak MCP on stdin/stdout.
+
 ## Setup
 
 ### Claude Code
@@ -113,7 +115,7 @@ Create and register a new cron job.
 **Input:**
 ```json
 {
-  "id": "backup-db",                    // required
+  "job_id": "backup-db",                // required
   "schedule": "0 3 * * *",              // required
   "command": "/path/to/script.sh",      // required
   "description": "Daily DB backup",     // optional
@@ -280,7 +282,7 @@ The MCP server also exposes read-only resources:
 | URI | Description |
 |-----|-------------|
 | `cronctl://jobs` | JSON list of all job definitions |
-| `cronctl://jobs/{id}` | Single job definition (YAML content) |
+| `cronctl://jobs/{job_id}` | Single job definition (YAML content) |
 | `cronctl://config` | Global config (YAML content) |
 
 ## Implementation Notes
@@ -302,7 +304,7 @@ mcp = ["mcp>=1.0"]
 Each MCP tool maps to a thin handler that:
 1. Validates input parameters
 2. Calls the corresponding core function
-3. Formats the result as MCP content
+3. Returns structured output directly from the same core objects the CLI uses
 
 ```python
 # Pseudocode
