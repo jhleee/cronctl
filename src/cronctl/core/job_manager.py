@@ -132,10 +132,7 @@ class JobManager:
 
     def import_jobs(self, source: Path, replace_existing: bool = False) -> list[Job]:
         payload = safe_load_yaml(source)
-        if isinstance(payload, dict):
-            raw_jobs = payload.get("jobs", [])
-        else:
-            raw_jobs = payload
+        raw_jobs = payload.get("jobs", []) if isinstance(payload, dict) else payload
         if not isinstance(raw_jobs, list):
             raise ValueError("Import file must contain a jobs list")
         imported: list[Job] = []

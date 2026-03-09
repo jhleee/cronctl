@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-from cronctl.core.config import AppPaths, build_paths, ensure_home, load_config
+from cronctl.core.config import build_paths, ensure_home, load_config
 from cronctl.core.db import RunLogDB
 from cronctl.core.executor import Executor
 from cronctl.core.job_manager import CrontabBackend, JobManager
-from cronctl.core.models import AppConfig
 from cronctl.core.notifier import Notifier
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from cronctl.core.config import AppPaths
+    from cronctl.core.models import AppConfig
 
 
 @dataclass
@@ -29,4 +34,11 @@ def build_runtime(home: str | Path, backend: CrontabBackend | None = None) -> Ru
     jobs = JobManager(paths, backend=backend)
     notifier = Notifier()
     executor = Executor(paths=paths, config=config, job_manager=jobs, db=db, notifier=notifier)
-    return Runtime(paths=paths, config=config, db=db, jobs=jobs, notifier=notifier, executor=executor)
+    return Runtime(
+        paths=paths,
+        config=config,
+        db=db,
+        jobs=jobs,
+        notifier=notifier,
+        executor=executor,
+    )

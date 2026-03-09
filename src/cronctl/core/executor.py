@@ -5,15 +5,19 @@ import os
 import subprocess
 import time
 from dataclasses import replace
-from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from cronctl.core.config import AppPaths
 from cronctl.core.db import RunLogDB
 from cronctl.core.job_manager import JobManager
 from cronctl.core.models import AppConfig, Job, RetryPolicy, RunResult, RunStatus
 from cronctl.core.notifier import Notifier, should_notify
 from cronctl.core.utils import generate_run_id, tail_lines, utc_now
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from cronctl.core.config import AppPaths
 
 logger = logging.getLogger(__name__)
 

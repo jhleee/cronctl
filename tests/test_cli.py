@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 from click.testing import CliRunner
 
 from cronctl.cli.main import cli
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _make_fake_crontab(tmp_path: Path) -> tuple[str, Path]:
@@ -45,7 +48,11 @@ def test_cli_job_lifecycle(tmp_path: Path) -> None:
     home = tmp_path / "home"
     env = {"CRONCTL_CRONTAB_BIN": crontab_bin}
 
-    result = runner.invoke(cli, ["--home", str(home), "--json", "init", "--non-interactive"], env=env)
+    result = runner.invoke(
+        cli,
+        ["--home", str(home), "--json", "init", "--non-interactive"],
+        env=env,
+    )
     assert result.exit_code == 0, result.output
 
     result = runner.invoke(

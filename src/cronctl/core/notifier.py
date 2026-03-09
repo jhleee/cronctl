@@ -33,7 +33,13 @@ class Notifier:
     def available(self) -> bool:
         return httpx is not None
 
-    def send(self, config: AppConfig, job: Job, result: RunResult, event: str) -> NotificationResult:
+    def send(
+        self,
+        config: AppConfig,
+        job: Job,
+        result: RunResult,
+        event: str,
+    ) -> NotificationResult:
         output = NotificationResult(errors=[])
         if httpx is None:
             output.failed += len(config.notifications.channels)
@@ -70,7 +76,13 @@ class Notifier:
         )
         return self.send(config, fake_job, fake_result, "test")
 
-    def _send_channel(self, channel: NotifyChannel, job: Job, result: RunResult, event: str) -> None:
+    def _send_channel(
+        self,
+        channel: NotifyChannel,
+        job: Job,
+        result: RunResult,
+        event: str,
+    ) -> None:
         assert httpx is not None
         payload = self._build_payload(channel, job, result, event)
         headers = {"Content-Type": "application/json"}
@@ -101,7 +113,11 @@ class Notifier:
                         "color": 0xE74C3C if result.status != RunStatus.SUCCESS else 0x2ECC71,
                         "fields": [
                             {"name": "Exit Code", "value": str(result.exit_code), "inline": True},
-                            {"name": "Duration", "value": f"{result.duration_ms}ms", "inline": True},
+                            {
+                                "name": "Duration",
+                                "value": f"{result.duration_ms}ms",
+                                "inline": True,
+                            },
                             {"name": "Attempt", "value": str(result.attempt), "inline": True},
                             {"name": "stderr (tail)", "value": f"```{stderr_tail or ' '}```"},
                         ],
@@ -117,7 +133,11 @@ class Notifier:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": f"*Job:* `{job.id}`\n*Status:* {status_text}\n*Exit:* {result.exit_code}",
+                            "text": (
+                                f"*Job:* `{job.id}`\n"
+                                f"*Status:* {status_text}\n"
+                                f"*Exit:* {result.exit_code}"
+                            ),
                         },
                     },
                     {"type": "section", "text": {"type": "mrkdwn", "text": f"```{stderr_tail}```"}},
@@ -147,6 +167,4 @@ def should_notify(config: AppConfig, job: Job, event: str) -> bool:
         return config.notifications.on_timeout
     if event == "recovery":
         return config.notifications.on_recovery
-    if event == "test":
-        return True
-    return False
+    return event == "test"

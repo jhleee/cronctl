@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from cronctl.core.config import build_paths
 from cronctl.core.db import RunLogDB
 from cronctl.core.executor import Executor
 from cronctl.core.job_manager import JobManager, MemoryCrontabBackend
 from cronctl.core.models import AppConfig, Job, RetryPolicy, RunStatus
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_job_manager_sync_preserves_existing_entries(tmp_path: Path) -> None:

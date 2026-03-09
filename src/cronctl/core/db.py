@@ -4,14 +4,16 @@ import os
 import sqlite3
 import time
 from collections import defaultdict
-from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import timedelta
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from cronctl.core.models import RunResult, RunStatus
 from cronctl.core.utils import from_iso8601, to_iso8601, utc_now
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from pathlib import Path
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS job_runs (

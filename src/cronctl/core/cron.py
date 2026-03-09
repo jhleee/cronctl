@@ -86,9 +86,16 @@ def validate_cron_expression(expression: str) -> None:
     parse_cron_expression(expression)
 
 
-def next_run(expression: str, after: datetime | None = None, limit_days: int = 366) -> datetime | None:
+def next_run(
+    expression: str,
+    after: datetime | None = None,
+    limit_days: int = 366,
+) -> datetime | None:
     parsed = parse_cron_expression(expression)
-    current = (after or datetime.now().astimezone()).replace(second=0, microsecond=0) + timedelta(minutes=1)
+    current = (
+        (after or datetime.now().astimezone()).replace(second=0, microsecond=0)
+        + timedelta(minutes=1)
+    )
     deadline = current + timedelta(days=limit_days)
     while current <= deadline:
         if parsed.matches(current):
@@ -153,10 +160,7 @@ def _parse_value(
     names: dict[str, int] | None,
     normalize_weekday: bool,
 ) -> int:
-    if names and token in names:
-        value = names[token]
-    else:
-        value = int(token)
+    value = names[token] if names and token in names else int(token)
     if normalize_weekday and value == 7:
         value = 0
     if not minimum <= value <= maximum:

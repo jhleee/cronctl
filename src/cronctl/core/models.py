@@ -176,7 +176,11 @@ class Job:
             "enabled": self.enabled,
             "notify": self.notify,
         }
-        return {key: value for key, value in data.items() if value not in ({}, [], None, "") or key in {"enabled"}}
+        return {
+            key: value
+            for key, value in data.items()
+            if value not in ({}, [], None, "") or key in {"enabled"}
+        }
 
 
 @dataclass

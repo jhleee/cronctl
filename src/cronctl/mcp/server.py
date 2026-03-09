@@ -40,7 +40,7 @@ def serve_mcp(home: Path | None = None) -> None:
 
     @server.tool(name="cronctl_create_job", structured_output=True)
     def create_job(
-        id: str,
+        job_id: str,
         schedule: str,
         command: str,
         description: str = "",
@@ -54,7 +54,7 @@ def serve_mcp(home: Path | None = None) -> None:
         if retry_max is not None or retry_delay is not None:
             retry = RetryPolicy(max_attempts=retry_max or 1, delay=retry_delay or 30)
         job = Job(
-            id=id,
+            id=job_id,
             schedule=schedule,
             command=command,
             description=description,
@@ -65,7 +65,12 @@ def serve_mcp(home: Path | None = None) -> None:
         )
         yaml_path = runtime.jobs.save(job)
         sync = runtime.jobs.sync()
-        return {"created": True, "job_id": job.id, "crontab_synced": sync["synced"], "yaml_path": str(yaml_path)}
+        return {
+            "created": True,
+            "job_id": job.id,
+            "crontab_synced": sync["synced"],
+            "yaml_path": str(yaml_path),
+        }
 
     @server.tool(name="cronctl_delete_job", structured_output=True)
     def delete_job(job_id: str) -> dict:
@@ -95,7 +100,12 @@ def serve_mcp(home: Path | None = None) -> None:
             changes.append(f"enabled={'true' if enabled else 'false'}")
         job, changed = runtime.jobs.update(job_id, changes)
         sync = runtime.jobs.sync()
-        return {"updated": True, "job_id": job.id, "changes": changed, "crontab_synced": sync["synced"]}
+        return {
+            "updated": True,
+            "job_id": job.id,
+            "changes": changed,
+            "crontab_synced": sync["synced"],
+        }
 
     @server.tool(name="cronctl_run_job", structured_output=True)
     def run_job(job_id: str) -> dict:
@@ -114,7 +124,9 @@ def serve_mcp(home: Path | None = None) -> None:
         next_runs = []
         for job in enabled:
             next_at = next_run(job.schedule)
-            next_runs.append({"job_id": job.id, "next_at": next_at.isoformat() if next_at else None})
+            next_runs.append(
+                {"job_id": job.id, "next_at": next_at.isoformat() if next_at else None}
+            )
         next_runs.sort(key=lambda item: item["next_at"] or "")
         return {
             "total_jobs": len(jobs),
