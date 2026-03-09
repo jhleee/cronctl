@@ -19,12 +19,21 @@ AI-agent-friendly local cron job manager built on top of system `cron`.
 ```bash
 git clone https://github.com/jhleee/cronctl.git
 cd cronctl
-uv sync
+./scripts/bootstrap.sh
+uv run python -m cronctl doctor --json
 uv run python -m cronctl init --non-interactive
 uv run python -m cronctl add --id hello --schedule "* * * * *" --command "printf hello"
 uv run python -m cronctl exec hello
 uv run python -m cronctl logs hello --last 1
 ```
+
+## Agent Bootstrap Assets
+
+- `.python-version` pins the intended interpreter line for local tooling.
+- `uv.lock` gives agents a reproducible dependency graph.
+- `scripts/bootstrap.sh` installs Python 3.11 via `uv`, syncs all extras, and prints the next commands.
+- `Makefile` adds `make setup`, `make lint`, `make test`, and `make doctor`.
+- `.mcp.json.example` and `.claude/settings.cronctl.json.example` are copyable MCP templates for repo-local use.
 
 ## Documentation
 

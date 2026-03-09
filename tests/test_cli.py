@@ -134,3 +134,35 @@ def test_cli_import_round_trip(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert payload["jobs"][0]["id"] == "sync-s3"
+
+
+def test_doctor_reports_repo_bootstrap_assets_without_side_effects(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    runner = CliRunner()
+    crontab_bin, _ = _make_fake_crontab(tmp_path)
+    home = tmp_path / "doctor-home"
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".python-version").write_text("3.11\n", encoding="utf-8")
+    (tmp_path / "uv.lock").write_text("# fake lock\n", encoding="utf-8")
+    scripts_dir = tmp_path / "scripts"
+    scripts_dir.mkdir()
+    (scripts_dir / "bootstrap.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    (tmp_path / "Makefile").write_text("setup:\n\ttrue\n", encoding="utf-8")
+    (tmp_path / ".mcp.json.example").write_text("{}", encoding="utf-8")
+    claude_dir = tmp_path / ".claude"
+    claude_dir.mkdir()
+    (claude_dir / "settings.cronctl.json.example").write_text("{}", encoding="utf-8")
+    env = {"CRONCTL_CRONTAB_BIN": crontab_bin}
+
+    result = runner.invoke(cli, ["--home", str(home), "--json", "doctor"], env=env)
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["home"] == str(home)
+    assert payload["repo_bootstrap_ready"] is True
+    assert payload["bootstrap_assets"]["uv_lock"] is True
+    assert payload["bootstrap_assets"]["bootstrap_script"] is True
+    assert payload["paths"]["home_exists"] is False
+    assert not home.exists()

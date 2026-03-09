@@ -8,6 +8,21 @@ export CRONCTL_CRONTAB_BIN=/tmp/cronctl-docs-fake-crontab
 
 and a demo home at `/tmp/cronctl-docs-home`.
 
+## `scripts/bootstrap.sh`
+
+```text
+$ ./scripts/bootstrap.sh
+==> Ensuring Python 3.11 is available
+==> Lockfile status
+Using existing uv.lock
+==> Syncing project with all extras
+==> Bootstrap complete
+Next steps:
+  uv run python -m cronctl init --non-interactive
+  cp .mcp.json.example .mcp.json
+  cp .claude/settings.cronctl.json.example ~/.claude/settings.json
+```
+
 ## `init`
 
 ```bash
@@ -280,16 +295,75 @@ $ python -m cronctl --home /tmp/cronctl-docs-home --json gc --days 0
 ```json
 $ python -m cronctl --home /tmp/cronctl-docs-home --json doctor
 {
+  "ready": false,
+  "repo_bootstrap_ready": true,
   "home": "/tmp/cronctl-docs-home",
-  "config_exists": true,
-  "db_exists": true,
-  "crontab_binary": "/usr/bin/crontab",
+  "python": {
+    "version": "3.10.12",
+    "executable": "/usr/bin/python",
+    "requires": ">=3.11",
+    "compatible": false
+  },
+  "uv": {
+    "binary": "/home/ng0301/.local/bin/uv"
+  },
+  "crontab": {
+    "binary": "/tmp/cronctl-docs-fake-crontab",
+    "readable": true,
+    "read_error": null
+  },
   "cron": {
     "crontab_access": true,
     "service": "running"
   },
-  "notify_available": true,
-  "mcp_available": true
+  "paths": {
+    "home": "/tmp/cronctl-docs-home",
+    "home_exists": true,
+    "home_writable": true,
+    "config_exists": true,
+    "jobs_dir_exists": true,
+    "scripts_dir_exists": true,
+    "hooks_dir_exists": true,
+    "logs_dir_exists": true,
+    "db_exists": true
+  },
+  "extras": {
+    "notify_available": true,
+    "mcp_available": true
+  },
+  "bootstrap_assets": {
+    "python_version_file": true,
+    "uv_lock": true,
+    "bootstrap_script": true,
+    "makefile": true,
+    "mcp_example": true,
+    "claude_example": true
+  },
+  "checks": [
+    {
+      "name": "python",
+      "ok": false,
+      "detail": "Detected Python 3.10.12; requires >=3.11."
+    },
+    {
+      "name": "uv",
+      "ok": true,
+      "detail": "uv binary: /home/ng0301/.local/bin/uv"
+    },
+    {
+      "name": "crontab",
+      "ok": true,
+      "detail": "crontab binary: /tmp/cronctl-docs-fake-crontab"
+    },
+    {
+      "name": "home",
+      "ok": true,
+      "detail": "Home path: /tmp/cronctl-docs-home"
+    }
+  ],
+  "next_steps": [
+    "Install Python 3.11+ or run ./scripts/bootstrap.sh from the repo root."
+  ]
 }
 ```
 

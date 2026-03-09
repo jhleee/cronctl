@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -10,7 +12,8 @@ import click
 import yaml
 
 from cronctl.cli.support import emit, emit_yaml, exit_with_error, get_runtime_for_context, get_state
-from cronctl.core.config import copy_skill_template, ensure_home, save_config
+from cronctl.core.config import build_paths, copy_skill_template, ensure_home, save_config
+from cronctl.core.job_manager import SystemCrontabBackend
 from cronctl.core.models import AppConfig, NotifyChannel
 from cronctl.core.runtime import build_runtime
 
@@ -196,28 +199,38 @@ def gc(ctx: click.Context, days: int | None) -> None:
 @click.pass_context
 def doctor(ctx: click.Context) -> None:
     """Diagnose common local issues."""
-    runtime = get_runtime_for_context(ctx)
-    cron = _detect_cron()
-    crontab_bin = shutil.which("crontab")
-    payload: dict[str, Any] = {
-        "home": str(runtime.paths.home),
-        "config_exists": runtime.paths.config_path.exists(),
-        "db_exists": runtime.paths.db_path.exists(),
-        "crontab_binary": crontab_bin,
-        "cron": cron,
-        "notify_available": runtime.notifier.available(),
-        "mcp_available": _has_module("mcp"),
-    }
+    state = get_state(ctx)
+    payload = _build_doctor_payload(state.home)
     if ctx.obj["json"]:
         emit(ctx, payload)
         return
-    click.echo(f"Home: {payload['home']}")
-    click.echo(f"Config: {'ok' if payload['config_exists'] else 'missing'}")
-    click.echo(f"DB: {'ok' if payload['db_exists'] else 'missing'}")
-    click.echo(f"crontab: {crontab_bin or 'missing'}")
-    click.echo(f"cron service: {cron['service']}")
-    click.echo(f"notify extra: {'installed' if payload['notify_available'] else 'missing'}")
-    click.echo(f"mcp extra: {'installed' if payload['mcp_available'] else 'missing'}")
+    click.echo(f"Ready: {'yes' if payload['ready'] else 'no'}")
+    click.echo(
+        f"Repo bootstrap ready: {'yes' if payload['repo_bootstrap_ready'] else 'no'}"
+    )
+    click.echo(
+        "Python: "
+        f"{payload['python']['version']} "
+        f"({'compatible' if payload['python']['compatible'] else 'needs >=3.11'})"
+    )
+    click.echo(f"uv: {payload['uv']['binary'] or 'missing'}")
+    click.echo(f"crontab: {payload['crontab']['binary'] or 'missing'}")
+    click.echo(f"cron service: {payload['cron']['service']}")
+    click.echo(
+        "Home: "
+        f"{payload['paths']['home']} "
+        f"(exists={'yes' if payload['paths']['home_exists'] else 'no'}, "
+        f"writable={'yes' if payload['paths']['home_writable'] else 'no'})"
+    )
+    click.echo(
+        "Extras: "
+        f"notify={'yes' if payload['extras']['notify_available'] else 'no'}, "
+        f"mcp={'yes' if payload['extras']['mcp_available'] else 'no'}"
+    )
+    if payload["next_steps"]:
+        click.echo("Next steps:")
+        for item in payload["next_steps"]:
+            click.echo(f"  - {item}")
 
 
 def _detect_cron() -> dict[str, Any]:
@@ -245,6 +258,132 @@ def _register_claude_mcp() -> Path:
     data["mcpServers"] = mcp_servers
     settings_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     return settings_path
+
+
+def _build_doctor_payload(home: Path) -> dict[str, Any]:
+    paths = build_paths(home)
+    python_info = _python_diagnostics()
+    uv_info = {"binary": shutil.which("uv")}
+    crontab_info = _crontab_diagnostics()
+    cron_info = _detect_cron()
+    path_info = _path_diagnostics(paths)
+    bootstrap_assets = _bootstrap_asset_status(Path.cwd())
+    extras = {
+        "notify_available": _has_module("httpx"),
+        "mcp_available": _has_module("mcp"),
+    }
+    checks = [
+        {
+            "name": "python",
+            "ok": python_info["compatible"],
+            "detail": f"Detected Python {python_info['version']}; requires >=3.11.",
+        },
+        {
+            "name": "uv",
+            "ok": uv_info["binary"] is not None,
+            "detail": f"uv binary: {uv_info['binary'] or 'missing'}",
+        },
+        {
+            "name": "crontab",
+            "ok": crontab_info["binary"] is not None and crontab_info["readable"],
+            "detail": crontab_info["read_error"] or f"crontab binary: {crontab_info['binary']}",
+        },
+        {
+            "name": "home",
+            "ok": path_info["home_writable"],
+            "detail": f"Home path: {path_info['home']}",
+        },
+    ]
+    ready = all(item["ok"] for item in checks)
+    repo_bootstrap_ready = all(bootstrap_assets.values())
+    next_steps: list[str] = []
+    if not python_info["compatible"]:
+        next_steps.append("Install Python 3.11+ or run ./scripts/bootstrap.sh from the repo root.")
+    if uv_info["binary"] is None:
+        next_steps.append("Install uv before bootstrapping the repository.")
+    if not crontab_info["readable"]:
+        next_steps.append("Ensure the current user can access crontab and that cron is installed.")
+    if not path_info["home_writable"]:
+        next_steps.append(f"Choose a writable CRONCTL_HOME. Current value: {path_info['home']}")
+    if not repo_bootstrap_ready:
+        missing = [name for name, ok in bootstrap_assets.items() if not ok]
+        next_steps.append(f"Missing repo bootstrap assets: {', '.join(missing)}")
+    return {
+        "ready": ready,
+        "repo_bootstrap_ready": repo_bootstrap_ready,
+        "home": str(paths.home),
+        "python": python_info,
+        "uv": uv_info,
+        "crontab": crontab_info,
+        "cron": cron_info,
+        "paths": path_info,
+        "extras": extras,
+        "bootstrap_assets": bootstrap_assets,
+        "checks": checks,
+        "next_steps": next_steps,
+    }
+
+
+def _python_diagnostics() -> dict[str, Any]:
+    version = ".".join(str(part) for part in sys.version_info[:3])
+    compatible = sys.version_info >= (3, 11)
+    return {
+        "version": version,
+        "executable": sys.executable,
+        "requires": ">=3.11",
+        "compatible": compatible,
+    }
+
+
+def _crontab_diagnostics() -> dict[str, Any]:
+    executable = os.environ.get("CRONCTL_CRONTAB_BIN") or shutil.which("crontab")
+    result = {
+        "binary": executable,
+        "readable": False,
+        "read_error": None,
+    }
+    if executable is None:
+        result["read_error"] = "crontab binary not found"
+        return result
+    try:
+        SystemCrontabBackend(executable=executable).read()
+        result["readable"] = True
+    except Exception as exc:
+        result["read_error"] = str(exc)
+    return result
+
+
+def _path_diagnostics(paths: Any) -> dict[str, Any]:
+    home_probe = paths.home if paths.home.exists() else _nearest_existing_parent(paths.home)
+    return {
+        "home": str(paths.home),
+        "home_exists": paths.home.exists(),
+        "home_writable": os.access(home_probe, os.W_OK),
+        "config_exists": paths.config_path.exists(),
+        "jobs_dir_exists": paths.jobs_dir.exists(),
+        "scripts_dir_exists": paths.scripts_dir.exists(),
+        "hooks_dir_exists": paths.hooks_dir.exists(),
+        "logs_dir_exists": paths.logs_dir.exists(),
+        "db_exists": paths.db_path.exists(),
+    }
+
+
+def _nearest_existing_parent(path: Path) -> Path:
+    current = path
+    while not current.exists() and current != current.parent:
+        current = current.parent
+    return current
+
+
+def _bootstrap_asset_status(root: Path) -> dict[str, bool]:
+    return {
+        "python_version_file": (root / ".python-version").exists(),
+        "uv_lock": (root / "uv.lock").exists(),
+        "bootstrap_script": (root / "scripts" / "bootstrap.sh").exists(),
+        "makefile": (root / "Makefile").exists(),
+        "mcp_example": (root / ".mcp.json.example").exists(),
+        "claude_example": (root / ".claude" / "settings.cronctl.json.example").exists(),
+    }
 
 
 def _has_module(name: str) -> bool:

@@ -38,13 +38,27 @@ Existing cron managers fall into two camps: heavyweight orchestrators (Airflow, 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — implementation structure and core flow
 - [`ROADMAP.md`](ROADMAP.md) — completed work and remaining gaps
 
+## Agent Bootstrap Assets
+
+The repository now includes the minimum assets an agent usually needs to self-bootstrap from a cold checkout:
+
+- `.python-version`
+- `uv.lock`
+- `scripts/bootstrap.sh`
+- `Makefile`
+- `.mcp.json.example`
+- `.claude/settings.cronctl.json.example`
+
 ## Quick Start
 
 ```bash
 # From source
 git clone https://github.com/jhleee/cronctl.git
 cd cronctl
-uv sync
+./scripts/bootstrap.sh
+
+# Sanity check the environment
+uv run python -m cronctl doctor --json
 
 # Non-interactive setup
 uv run python -m cronctl init --non-interactive
@@ -75,9 +89,6 @@ uv sync
 
 # Run without installing globally
 uv run python -m cronctl --help
-
-# Or install the checkout as a local tool
-uv tool install .
 ```
 
 ## CLI Reference

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "cronctl": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "cronctl", "mcp"],
+      "cwd": "/absolute/path/to/cronctl"
+    }
+  }
+}

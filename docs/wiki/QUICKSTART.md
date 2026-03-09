@@ -7,15 +7,12 @@ This page walks through the shortest path from a fresh checkout to a working loc
 ```bash
 git clone https://github.com/jhleee/cronctl.git
 cd cronctl
-uv sync
+./scripts/bootstrap.sh
+uv run python -m cronctl doctor --json
 uv run python -m cronctl --help
 ```
 
-If you want a dedicated tool entry instead of `uv run`, install the checkout itself:
-
-```bash
-uv tool install .
-```
+`bootstrap.sh` uses `uv` to ensure Python 3.11 is available, honors `uv.lock`, and syncs all optional extras so MCP, notifications, linting, and tests are ready without extra decisions from the agent.
 
 ## 2. Initialize the cronctl home
 
@@ -45,6 +42,11 @@ Example output:
 ```
 
 Use `--register-claude-mcp` if you want `cronctl mcp` written into `~/.claude/settings.json`, and `--skill-path` if you want the skill manifest copied into a project.
+
+If you prefer templated config files instead of mutating user config directly, start from:
+
+- `.mcp.json.example`
+- `.claude/settings.cronctl.json.example`
 
 ## 3. Add a job
 
