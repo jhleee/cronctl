@@ -24,12 +24,12 @@ cronctl init                         # First-time setup
 cronctl add --id ID --schedule CRON --command CMD
 cronctl remove <job_id>
 cronctl edit <job_id> --set key=value
-cronctl list [--tag=TAG] [--json]
+cronctl [--json] list [--tag=TAG]
 cronctl enable/disable <job_id>
 cronctl sync                         # Regenerate crontab
 cronctl exec <job_id>                # Run now (same as cron would)
-cronctl logs <job_id> [--last=N] [--json]
-cronctl status [--json]
+cronctl [--json] logs <job_id> [--last=N]
+cronctl [--json] status
 cronctl gc [--days=30]               # Clean old logs
 ```
 
@@ -70,11 +70,11 @@ Prefer MCP tools over CLI when the MCP server is connected, as they provide type
 
 1. Check which jobs are failing:
    ```bash
-   cronctl status --json
+   cronctl --json status
    ```
 2. Get recent logs for the failed job:
    ```bash
-   cronctl logs <job-id> --last=5 --json
+   cronctl --json logs <job-id> --last=5
    ```
 3. Analyze the pattern:
    - Consistent exit code → script bug
@@ -98,7 +98,7 @@ cronctl export > jobs-backup.yaml
 cronctl import jobs-backup.yaml
 
 # Disable all jobs with a tag
-cronctl list --tag=backup --json | jq -r '.[].id' | xargs -I{} cronctl disable {}
+cronctl --json list --tag=backup | jq -r '.[].id' | xargs -I{} cronctl disable {}
 ```
 
 ## Conventions

@@ -146,6 +146,7 @@ def test_doctor_reports_repo_bootstrap_assets_without_side_effects(
     monkeypatch.chdir(tmp_path)
     (tmp_path / ".python-version").write_text("3.11\n", encoding="utf-8")
     (tmp_path / "uv.lock").write_text("# fake lock\n", encoding="utf-8")
+    (tmp_path / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     scripts_dir = tmp_path / "scripts"
     scripts_dir.mkdir()
     (scripts_dir / "bootstrap.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
@@ -163,6 +164,7 @@ def test_doctor_reports_repo_bootstrap_assets_without_side_effects(
     assert payload["home"] == str(home)
     assert payload["repo_bootstrap_ready"] is True
     assert payload["bootstrap_assets"]["uv_lock"] is True
+    assert payload["bootstrap_assets"]["install_script"] is True
     assert payload["bootstrap_assets"]["bootstrap_script"] is True
     assert payload["paths"]["home_exists"] is False
     assert not home.exists()

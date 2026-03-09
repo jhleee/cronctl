@@ -369,7 +369,7 @@ cronctl init --non-interactive --discord-webhook "https://..."
 cronctl init --non-interactive --slack-webhook "https://..."
 ```
 
-**JSON output structure (example for `cronctl status --json`):**
+**JSON output structure (example for `cronctl --json status`):**
 
 ```json
 {

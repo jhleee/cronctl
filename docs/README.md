@@ -44,6 +44,7 @@ The repository now includes the minimum assets an agent usually needs to self-bo
 
 - `.python-version`
 - `uv.lock`
+- `install.sh`
 - `scripts/bootstrap.sh`
 - `Makefile`
 - `.mcp.json.example`
@@ -52,13 +53,17 @@ The repository now includes the minimum assets an agent usually needs to self-bo
 ## Quick Start
 
 ```bash
-# From source
+# Remote bootstrap from the public repository
+bash <(curl -fsSL https://raw.githubusercontent.com/jhleee/cronctl/main/install.sh)
+cd "${XDG_DATA_HOME:-$HOME/.local/share}/cronctl/repo"
+
+# Or from source
 git clone https://github.com/jhleee/cronctl.git
 cd cronctl
 ./scripts/bootstrap.sh
 
 # Sanity check the environment
-uv run python -m cronctl doctor --json
+uv run python -m cronctl --json doctor
 
 # Non-interactive setup
 uv run python -m cronctl init --non-interactive
@@ -82,10 +87,11 @@ uv run python -m cronctl status
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-# From source
-git clone https://github.com/jhleee/cronctl.git
-cd cronctl
-uv sync
+# Install via the public raw script
+bash <(curl -fsSL https://raw.githubusercontent.com/jhleee/cronctl/main/install.sh)
+
+# Or bootstrap from a checkout
+git clone https://github.com/jhleee/cronctl.git && cd cronctl && ./scripts/bootstrap.sh
 
 # Run without installing globally
 uv run python -m cronctl --help
@@ -125,8 +131,8 @@ cronctl provides three layers of AI compatibility:
 Any agent that can execute shell commands can use cronctl. All commands produce structured JSON output with `--json`.
 
 ```bash
-cronctl status --json | jq '.failed_jobs'
-cronctl logs backup-db --last=3 --json
+cronctl --json status | jq '.failed_jobs'
+cronctl --json logs backup-db --last=3
 ```
 
 ### 2. MCP Server

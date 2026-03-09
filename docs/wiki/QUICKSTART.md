@@ -2,17 +2,29 @@
 
 This page walks through the shortest path from a fresh checkout to a working local job.
 
-## 1. Install and run from source
+## 1. Remote bootstrap or source checkout
+
+Fastest public entry point:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/jhleee/cronctl/main/install.sh)
+cd "${XDG_DATA_HOME:-$HOME/.local/share}/cronctl/repo"
+uv run python -m cronctl --help
+```
+
+Source checkout path:
 
 ```bash
 git clone https://github.com/jhleee/cronctl.git
 cd cronctl
 ./scripts/bootstrap.sh
-uv run python -m cronctl doctor --json
+uv run python -m cronctl --json doctor
 uv run python -m cronctl --help
 ```
 
 `bootstrap.sh` uses `uv` to ensure Python 3.11 is available, honors `uv.lock`, and syncs all optional extras so MCP, notifications, linting, and tests are ready without extra decisions from the agent.
+
+`install.sh` wraps clone-or-update, bootstraps the repository, runs `--json doctor`, and initializes `cronctl` non-interactively. It also supports optional flags like `CRONCTL_INSTALL_COPY_MCP=1` and `CRONCTL_INSTALL_REGISTER_CLAUDE_MCP=1`.
 
 ## 2. Initialize the cronctl home
 

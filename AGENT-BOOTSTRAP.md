@@ -8,13 +8,27 @@ Get the repository into a runnable state, verify the environment, then initializ
 
 ## Happy Path
 
-Run these commands from the repository root:
+For a public, no-clone-required entry point:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/jhleee/cronctl/main/install.sh)
+cd "${XDG_DATA_HOME:-$HOME/.local/share}/cronctl/repo"
+```
+
+For an already cloned checkout, run:
 
 ```bash
 ./scripts/bootstrap.sh
-uv run python -m cronctl doctor --json
+uv run python -m cronctl --json doctor
 uv run python -m cronctl init --non-interactive
 ```
+
+Optional install flags for the remote script:
+
+- `CRONCTL_INSTALL_INIT=0` to skip `init`
+- `CRONCTL_INSTALL_COPY_MCP=1` to materialize `.mcp.json`
+- `CRONCTL_INSTALL_REGISTER_CLAUDE_MCP=1` to register `cronctl mcp` in `~/.claude/settings.json`
+- `CRONCTL_INSTALL_ROOT=/custom/path` to change the managed checkout location
 
 If MCP integration is needed inside the repository:
 
@@ -31,7 +45,7 @@ cp .claude/settings.cronctl.json.example ~/.claude/settings.json
 
 ## Decision Contract
 
-Always inspect `uv run python -m cronctl doctor --json` before continuing.
+Always inspect `uv run python -m cronctl --json doctor` before continuing.
 
 - If `ready == true`, the runtime prerequisites are satisfied.
 - If `repo_bootstrap_ready == true`, the repository contains the bootstrap assets an agent should expect.
@@ -58,8 +72,8 @@ After `init`, this is the expected minimal flow:
 ```bash
 uv run python -m cronctl add --id hello --schedule "* * * * *" --command "printf hello"
 uv run python -m cronctl exec hello
-uv run python -m cronctl logs hello --last 1 --json
-uv run python -m cronctl status --json
+uv run python -m cronctl --json logs hello --last 1
+uv run python -m cronctl --json status
 ```
 
 ## Files an Agent May Edit

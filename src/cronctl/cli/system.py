@@ -379,6 +379,7 @@ def _bootstrap_asset_status(root: Path) -> dict[str, bool]:
     return {
         "python_version_file": (root / ".python-version").exists(),
         "uv_lock": (root / "uv.lock").exists(),
+        "install_script": (root / "install.sh").exists(),
         "bootstrap_script": (root / "scripts" / "bootstrap.sh").exists(),
         "makefile": (root / "Makefile").exists(),
         "mcp_example": (root / ".mcp.json.example").exists(),

@@ -23,6 +23,110 @@ Next steps:
   cp .claude/settings.cronctl.json.example ~/.claude/settings.json
 ```
 
+## `install.sh`
+
+Real run against a local `file://` snapshot and a fake crontab backend:
+
+```text
+$ CRONCTL_INSTALL_REPO=file:///tmp/cronctl-install-source \
+  CRONCTL_INSTALL_ROOT=/tmp/cronctl-install-root \
+  CRONCTL_HOME=/tmp/cronctl-install-home \
+  CRONCTL_CRONTAB_BIN=/tmp/cronctl-install-fake-crontab \
+  ./install.sh
+==> Cloning file:///tmp/cronctl-install-source into /tmp/cronctl-install-root/repo
+==> Bootstrapping repository dependencies
+==> Ensuring Python 3.11 is available
+Python 3.11 is already installed
+==> Lockfile status
+Using existing uv.lock
+==> Syncing project with all extras
+Using CPython 3.11.14
+Creating virtual environment at: .venv
+Resolved 45 packages in 2ms
+...
+==> Bootstrap complete
+Next steps:
+  uv run python -m cronctl init --non-interactive
+  cp .mcp.json.example .mcp.json
+  cp .claude/settings.cronctl.json.example ~/.claude/settings.json
+==> Running doctor diagnostics
+{
+  "ready": true,
+  "repo_bootstrap_ready": true,
+  "home": "/tmp/cronctl-install-home",
+  "python": {
+    "version": "3.11.14",
+    "executable": "/tmp/cronctl-install-root/repo/.venv/bin/python3",
+    "requires": ">=3.11",
+    "compatible": true
+  },
+  "uv": {
+    "binary": "/home/ng0301/.local/bin/uv"
+  },
+  "crontab": {
+    "binary": "/tmp/cronctl-install-fake-crontab",
+    "readable": true,
+    "read_error": null
+  },
+  "cron": {
+    "crontab_access": true,
+    "service": "running"
+  },
+  "paths": {
+    "home": "/tmp/cronctl-install-home",
+    "home_exists": false,
+    "home_writable": true,
+    "config_exists": false,
+    "jobs_dir_exists": false,
+    "scripts_dir_exists": false,
+    "hooks_dir_exists": false,
+    "logs_dir_exists": false,
+    "db_exists": false
+  },
+  "extras": {
+    "notify_available": true,
+    "mcp_available": true
+  },
+  "bootstrap_assets": {
+    "python_version_file": true,
+    "uv_lock": true,
+    "install_script": true,
+    "bootstrap_script": true,
+    "makefile": true,
+    "mcp_example": true,
+    "claude_example": true
+  },
+  "checks": [
+    {
+      "name": "python",
+      "ok": true,
+      "detail": "Detected Python 3.11.14; requires >=3.11."
+    },
+    {
+      "name": "uv",
+      "ok": true,
+      "detail": "uv binary: /home/ng0301/.local/bin/uv"
+    },
+    {
+      "name": "crontab",
+      "ok": true,
+      "detail": "crontab binary: /tmp/cronctl-install-fake-crontab"
+    },
+    {
+      "name": "home",
+      "ok": true,
+      "detail": "Home path: /tmp/cronctl-install-home"
+    }
+  ],
+  "next_steps": []
+}
+==> Initializing cronctl home
+Initialized cronctl home at /tmp/cronctl-install-home
+==> Install complete
+Repository: /tmp/cronctl-install-root/repo
+Home: /tmp/cronctl-install-home
+```
+
 ## `init`
 
 ```bash

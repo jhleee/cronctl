@@ -20,17 +20,24 @@ AI-agent-friendly local cron job manager built on top of system `cron`.
 git clone https://github.com/jhleee/cronctl.git
 cd cronctl
 ./scripts/bootstrap.sh
-uv run python -m cronctl doctor --json
+uv run python -m cronctl --json doctor
 uv run python -m cronctl init --non-interactive
 uv run python -m cronctl add --id hello --schedule "* * * * *" --command "printf hello"
 uv run python -m cronctl exec hello
 uv run python -m cronctl logs hello --last 1
 ```
 
+Remote one-liner:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/jhleee/cronctl/main/install.sh)
+```
+
 ## Agent Bootstrap Assets
 
 - `.python-version` pins the intended interpreter line for local tooling.
 - `uv.lock` gives agents a reproducible dependency graph.
+- `install.sh` supports clone-or-update bootstrap from a public raw URL.
 - `scripts/bootstrap.sh` installs Python 3.11 via `uv`, syncs all extras, and prints the next commands.
 - `Makefile` adds `make setup`, `make lint`, `make test`, and `make doctor`.
 - `.mcp.json.example` and `.claude/settings.cronctl.json.example` are copyable MCP templates for repo-local use.
@@ -39,6 +46,7 @@ uv run python -m cronctl logs hello --last 1
 
 - Auto-discovered agent instructions: [`AGENTS.md`](./AGENTS.md)
 - Agent-first bootstrap contract: [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md)
+- Remote installer: [`install.sh`](./install.sh)
 - Overview and current feature map: [`docs/README.md`](./docs/README.md)
 - Wiki index: [`docs/wiki/README.md`](./docs/wiki/README.md)
 - Step-by-step walkthrough: [`docs/wiki/QUICKSTART.md`](./docs/wiki/QUICKSTART.md)
