@@ -37,6 +37,8 @@ uv run python -m cronctl logs hello --last 1
 
 ## Documentation
 
+- Auto-discovered agent instructions: [`AGENTS.md`](./AGENTS.md)
+- Agent-first bootstrap contract: [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md)
 - Overview and current feature map: [`docs/README.md`](./docs/README.md)
 - Wiki index: [`docs/wiki/README.md`](./docs/wiki/README.md)
 - Step-by-step walkthrough: [`docs/wiki/QUICKSTART.md`](./docs/wiki/QUICKSTART.md)
