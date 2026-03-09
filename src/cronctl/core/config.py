@@ -59,9 +59,13 @@ def save_config(paths: AppPaths, config: AppConfig) -> None:
 
 
 def copy_skill_template(destination: Path) -> Path:
-    from cronctl.skill import template_path
+    from cronctl.skill import template_name, template_path
 
-    destination.mkdir(parents=True, exist_ok=True)
-    target = destination / "cronctl.md"
+    destination = destination.expanduser()
+    skill_root = (
+        destination if destination.name == template_name() else destination / template_name()
+    )
+    skill_root.mkdir(parents=True, exist_ok=True)
+    target = skill_root / "SKILL.md"
     shutil.copyfile(template_path(), target)
     return target

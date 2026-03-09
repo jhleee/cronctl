@@ -9,6 +9,7 @@ PYTHON_VERSION="${CRONCTL_BOOTSTRAP_PYTHON:-3.11}"
 AUTO_INIT="${CRONCTL_INSTALL_INIT:-1}"
 COPY_MCP="${CRONCTL_INSTALL_COPY_MCP:-0}"
 REGISTER_CLAUDE_MCP="${CRONCTL_INSTALL_REGISTER_CLAUDE_MCP:-0}"
+SKILL_PATH="${CRONCTL_INSTALL_SKILL_PATH:-}"
 AUTO_INSTALL_UV="${CRONCTL_INSTALL_UV:-1}"
 UV_INSTALL_DIR="${CRONCTL_UV_INSTALL_DIR:-$HOME/.local/bin}"
 
@@ -87,6 +88,9 @@ copy_mcp_template() {
 
 run_init() {
   local init_args=(run python -m cronctl init --non-interactive)
+  if [ -n "$SKILL_PATH" ]; then
+    init_args+=(--skill-path "$SKILL_PATH")
+  fi
   if is_true "$REGISTER_CLAUDE_MCP"; then
     init_args+=(--register-claude-mcp)
   fi

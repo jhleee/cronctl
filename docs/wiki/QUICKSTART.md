@@ -53,7 +53,7 @@ Example output:
 }
 ```
 
-Use `--register-claude-mcp` if you want `cronctl mcp` written into `~/.claude/settings.json`, and `--skill-path` if you want the skill manifest copied into a project.
+Use `--register-claude-mcp` if you want `cronctl mcp` written into `~/.claude/settings.json`, and `--skill-path` if you want `cronctl/SKILL.md` copied into a skills root such as `.claude/skills`, `.opencode/skills`, `.agents/skills`, or `skills`.
 
 If you prefer templated config files instead of mutating user config directly, start from:
 

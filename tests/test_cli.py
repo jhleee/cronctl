@@ -95,6 +95,38 @@ def test_cli_job_lifecycle(tmp_path: Path) -> None:
     assert "CRONCTL MANAGED START" in crontab_store.read_text(encoding="utf-8")
 
 
+def test_init_copies_agentskills_layout(tmp_path: Path) -> None:
+    runner = CliRunner()
+    crontab_bin, _ = _make_fake_crontab(tmp_path)
+    home = tmp_path / "home"
+    skills_root = tmp_path / ".claude" / "skills"
+    env = {"CRONCTL_CRONTAB_BIN": crontab_bin}
+
+    result = runner.invoke(
+        cli,
+        [
+            "--home",
+            str(home),
+            "--json",
+            "init",
+            "--non-interactive",
+            "--skill-path",
+            str(skills_root),
+        ],
+        env=env,
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    skill_path = skills_root / "cronctl" / "SKILL.md"
+    assert payload["skill_path"] == str(skill_path)
+    assert skill_path.exists()
+    skill_text = skill_path.read_text(encoding="utf-8")
+    assert skill_text.startswith("---\nname: cronctl\n")
+    assert "description:" in skill_text
+    assert "cronctl --json status" in skill_text
+
+
 def test_cli_import_round_trip(tmp_path: Path) -> None:
     runner = CliRunner()
     crontab_bin, _ = _make_fake_crontab(tmp_path)

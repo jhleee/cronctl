@@ -356,7 +356,7 @@ $ cronctl init
         Set up MCP server for Claude Code? [y/N]: y
         ✓ Added to ~/.claude/settings.json
         
-        Copy SKILL.md to a project? [y/N]: n
+        Copy an AgentSkills-compatible skill to a skills directory? [y/N]: n
 
   ✓ cronctl is ready. Try: cronctl add --id hello --schedule "* * * * *" --command "echo hello"
 ```
@@ -427,10 +427,10 @@ Implements MCP stdio transport using the `mcp` Python SDK.
 A markdown document that provides AI agents with context about cronctl: when to use it, what workflows to follow, and what conventions to respect.
 
 **Placement options:**
-- `~/.claude/skills/cronctl.md` for Claude Code
-- Project `.claude/skills/` for project-scoped agents
-- System prompt injection for custom agent frameworks
-- `cronctl init --skill-path <dir>` copies it automatically
+- `~/.claude/skills/cronctl/SKILL.md` for Claude-style project skills
+- Project `.opencode/skills/cronctl/SKILL.md` or `.agents/skills/cronctl/SKILL.md` for OpenCode
+- Project `skills/cronctl/SKILL.md` or `~/.openclaw/skills/cronctl/SKILL.md` for OpenClaw
+- `cronctl init --skill-path <skills-root>` copies it automatically
 
 ## Directory Layout
 

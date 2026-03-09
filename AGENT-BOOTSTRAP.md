@@ -28,6 +28,7 @@ Optional install flags for the remote script:
 - `CRONCTL_INSTALL_INIT=0` to skip `init`
 - `CRONCTL_INSTALL_COPY_MCP=1` to materialize `.mcp.json`
 - `CRONCTL_INSTALL_REGISTER_CLAUDE_MCP=1` to register `cronctl mcp` in `~/.claude/settings.json`
+- `CRONCTL_INSTALL_SKILL_PATH=.claude/skills` to copy `cronctl/SKILL.md` into a skills root
 - `CRONCTL_INSTALL_ROOT=/custom/path` to change the managed checkout location
 
 If MCP integration is needed inside the repository:
@@ -99,6 +100,7 @@ uv run python -m cronctl --json status
 
 - `README.md`
 - `docs/README.md`
+- `docs/SKILLS.md`
 - `docs/wiki/QUICKSTART.md`
 - `docs/wiki/CLI-IO.md`
 - `docs/MCP.md`

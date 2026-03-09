@@ -36,8 +36,8 @@ The minimum viable release: define → schedule → execute → log → query �
 
 ## v0.3.0 — Skill & Agent Polish
 
-- [x] `skill/SKILL.md` — skill manifest template
-- [x] `cronctl init --skill-path` — copy skill to an agent project
+- [x] `skill/SKILL.md` — AgentSkills-compatible skill template
+- [x] `cronctl init --skill-path` — copy `cronctl/SKILL.md` into a skills root
 - [x] `cronctl export` / `cronctl import` — bulk job management
 - [x] `cronctl edit --set key=value` — inline property updates
 - [ ] Shell completion generation (bash, zsh, fish) via click

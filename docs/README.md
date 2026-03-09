@@ -34,6 +34,7 @@ Existing cron managers fall into two camps: heavyweight orchestrators (Airflow, 
 - [`wiki/README.md`](wiki/README.md) — wiki index
 - [`wiki/QUICKSTART.md`](wiki/QUICKSTART.md) — step-by-step walkthrough
 - [`wiki/CLI-IO.md`](wiki/CLI-IO.md) — command-by-command I/O examples from real runs
+- [`SKILLS.md`](SKILLS.md) — cross-client skill compatibility notes for Claude-style skills, OpenCode, and OpenClaw
 - [`MCP.md`](MCP.md) — MCP tools, resources, and setup notes
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — implementation structure and core flow
 - [`ROADMAP.md`](ROADMAP.md) — completed work and remaining gaps
@@ -159,13 +160,22 @@ Available MCP tools: `cronctl_list_jobs`, `cronctl_create_job`, `cronctl_delete_
 
 ### 3. Skill Manifest
 
-For agents that use context injection (like Claude Code's CLAUDE.md or project skills), cronctl provides a SKILL.md:
+For agents that use context injection, cronctl provides an AgentSkills-compatible `cronctl/SKILL.md`:
 
 ```bash
 cronctl init --skill-path /path/to/project/.claude/skills/
 ```
 
-This copies the skill manifest so the agent knows when and how to use cronctl.
+This writes `/path/to/project/.claude/skills/cronctl/SKILL.md` so the agent knows when and how to use cronctl.
+
+Other common targets:
+
+```bash
+cronctl init --skill-path /path/to/project/.opencode/skills/
+cronctl init --skill-path /path/to/project/skills/
+```
+
+See [`SKILLS.md`](SKILLS.md) for cross-client compatibility notes.
 
 ## Configuration
 

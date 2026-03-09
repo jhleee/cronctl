@@ -47,6 +47,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/jhleee/cronctl/main/install.
 - Auto-discovered agent instructions: [`AGENTS.md`](./AGENTS.md)
 - Agent-first bootstrap contract: [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md)
 - Remote installer: [`install.sh`](./install.sh)
+- Skill compatibility notes: [`docs/SKILLS.md`](./docs/SKILLS.md)
 - Overview and current feature map: [`docs/README.md`](./docs/README.md)
 - Wiki index: [`docs/wiki/README.md`](./docs/wiki/README.md)
 - Step-by-step walkthrough: [`docs/wiki/QUICKSTART.md`](./docs/wiki/QUICKSTART.md)

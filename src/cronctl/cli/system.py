@@ -27,7 +27,7 @@ from cronctl.core.runtime import build_runtime
     "--skill-path",
     type=click.Path(path_type=Path),
     default=None,
-    help="Copy skill manifest",
+    help="Copy AgentSkills-compatible cronctl/SKILL.md into this skills root",
 )
 @click.option(
     "--register-claude-mcp",
@@ -92,9 +92,9 @@ def init(
     if skill_path is not None:
         copied_skill = copy_skill_template(skill_path)
     elif not non_interactive and click.confirm(
-        "Copy SKILL.md to a project directory?", default=False
+        "Copy an AgentSkills-compatible skill to a skills directory?", default=False
     ):
-        copied_skill = copy_skill_template(Path(click.prompt("Skill directory", default=".")))
+        copied_skill = copy_skill_template(Path(click.prompt("Skills root", default=".")))
 
     claude_settings = None
     should_register_mcp = register_claude_mcp or (
